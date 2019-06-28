@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import MenuCard from "../components/MenuCard";
-import { Container, TabsContainer } from "../constants/Styles";
+import Styles, { Container } from "../constants/Styles";
 import { FlatList } from "react-native-gesture-handler";
 import { Text } from "react-native";
-import Styles from "../constants/Styles";
 import { loadStops } from "../constants/AuxFunctions";
 
 export default class HomeScreen extends Component {
@@ -17,7 +16,13 @@ export default class HomeScreen extends Component {
   }
 
   componentDidMount() {
+    const { navigation } = this.props;
     this._loadStops();
+
+    this.focusListener = navigation.addListener("didFocus", () => {
+      this._loadStops();
+      setTimeout(() => this._loadStops(), 50);
+    });
   }
 
   renderItem({ item }) {

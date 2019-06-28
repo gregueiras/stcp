@@ -1,11 +1,10 @@
-import React, { Component } from "react";
+import React, { Component }  from "react";                                                                                    
 import { TextInput, View, Alert, AsyncStorage } from "react-native";
 import { LineInfo, Line, Destination, DefaultTheme } from "../constants/Styles";
 import { PROVIDERS, STOPS_KEY, PROVIDERS_DATA } from "../constants/Strings";
 import { ThemeProvider } from "styled-components";
 import {
   FlatList,
-  TouchableHighlight,
   TouchableOpacity
 } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -13,6 +12,8 @@ import { withNavigation } from "react-navigation";
 import { fetchURL, loadStops } from "../constants/AuxFunctions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Dropdown } from "react-native-material-dropdown";
+import SUBWAY_STOPS from '../constants/stops';
+
 
 class Options extends Component {
   state = {
@@ -149,6 +150,12 @@ class Options extends Component {
     try {
       const provider = this.state.newProvider;
       const stopToAdd = this.state.newStop.toUpperCase();
+
+      
+      if (provider === PROVIDERS.METRO) {
+        if (!SUBWAY_STOPS.includes(stopToAdd.toLowerCase()))
+          throw new Error("Invalid Stop");
+      }
 
       const list = this.state.stopsList;
       if (list.filter(({ stop }) => stop === stopToAdd).length !== 0) {

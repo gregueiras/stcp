@@ -20,8 +20,11 @@ export default class MenuCard extends Component {
 
   async loadMenu() {
     try {
-      const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${this.props.provider}&stopCode=${this.props.provider}_${this.props.stopCode}`;
-      console.log(searchUrl);
+      const provider = this.props.provider.replace(/ /g, "+").toUpperCase();
+      const stop = this.props.stopCode.replace(/ /g, "+");
+
+      const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${provider}&stopCode=${provider}_${stop}`;
+
       const response = await fetch(searchUrl); // fetch page
       const text = await response.text(); // get response text
       const json = JSON.parse(text); // get response text
@@ -29,7 +32,7 @@ export default class MenuCard extends Component {
       const info = json
         .map(({ Value }) => Value)
         .map(([line, destination, time]) => {
-          return { line, destination, time, id: line + "_" + time };
+          return { line, destination, time, id: line + "_" + time + "_" + destination + "_" + Math.random() };
         });
 
       this.setState({ list: info });
