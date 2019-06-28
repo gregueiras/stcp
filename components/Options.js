@@ -1,19 +1,15 @@
-import React, { Component }  from "react";                                                                                    
+import React, { Component } from "react";
 import { TextInput, View, Alert, AsyncStorage } from "react-native";
 import { LineInfo, Line, Destination, DefaultTheme } from "../constants/Styles";
 import { PROVIDERS, STOPS_KEY, PROVIDERS_DATA } from "../constants/Strings";
 import { ThemeProvider } from "styled-components";
-import {
-  FlatList,
-  TouchableOpacity
-} from "react-native-gesture-handler";
+import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import { withNavigation } from "react-navigation";
 import { fetchURL, loadStops } from "../constants/AuxFunctions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Dropdown } from "react-native-material-dropdown";
-import SUBWAY_STOPS from '../constants/stops';
-
+import SUBWAY_STOPS from "../constants/stops";
 
 class Options extends Component {
   state = {
@@ -87,8 +83,8 @@ class Options extends Component {
       const res = JSON.parse(await fetchURL(url))[0].geomdesc;
       const coordinates = JSON.parse(res).coordinates;
 
-      coords.x = coordinates[0];
-      coords.y = coordinates[1];
+      coords.x = coordinates[1];
+      coords.y = coordinates[0];
     } else if (provider === PROVIDERS.METRO) {
       try {
         const { lat, lon } = await this.findPlace("metro " + stop, true, 1);
@@ -151,9 +147,15 @@ class Options extends Component {
       const provider = this.state.newProvider;
       const stopToAdd = this.state.newStop.toUpperCase();
 
-      
       if (provider === PROVIDERS.METRO) {
-        if (!SUBWAY_STOPS.includes(stopToAdd.toLowerCase()))
+        if (
+          !SUBWAY_STOPS.includes(
+            stopToAdd
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+          )
+        )
           throw new Error("Invalid Stop");
       }
 

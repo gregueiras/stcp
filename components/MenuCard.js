@@ -12,10 +12,14 @@ import {
 } from "../constants/Styles";
 import { FlatList } from "react-native-gesture-handler";
 import { ThemeProvider } from "styled-components";
+import { RefreshControl, ActivityIndicator } from "react-native";
+import tintColor from "../constants/Colors";
 
 export default class MenuCard extends Component {
   state = {
-    list: undefined
+    list: undefined,
+    refreshing: false,
+    loading: true
   };
 
   async loadMenu() {
@@ -32,10 +36,15 @@ export default class MenuCard extends Component {
       const info = json
         .map(({ Value }) => Value)
         .map(([line, destination, time]) => {
-          return { line, destination, time, id: line + "_" + time + "_" + destination + "_" + Math.random() };
+          return {
+            line,
+            destination,
+            time,
+            id: line + "_" + time + "_" + destination + "_" + Math.random()
+          };
         });
 
-      this.setState({ list: info });
+      this.setState({ list: info, loading: false });
     } catch (error) {
       console.log("ERRO");
       console.log(error);
@@ -47,15 +56,34 @@ export default class MenuCard extends Component {
     if (this.props.stopCode !== "STOP") this.loadMenu();
   }
 
+  _onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.loadMenu().then(() => {
+      this.setState({ refreshing: false });
+    });
+  };
+
   renderList() {
     if (this.state.list !== undefined) {
-      return (
-        <FlatList
-          data={this.state.list}
-          keyExtractor={item => item.id}
-          renderItem={this.renderItem}
-        />
-      );
+      if (this.state.loading) {
+        return (
+          <ActivityIndicator size="small" color={tintColor} />
+        );
+      } else {
+        return (
+          <FlatList
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.refreshing}
+                onRefresh={this._onRefresh}
+              />
+            }
+            data={this.state.list}
+            keyExtractor={item => item.id}
+            renderItem={this.renderItem}
+          />
+        );
+      }
     }
   }
 
@@ -73,7 +101,7 @@ export default class MenuCard extends Component {
     return (
       <ThemeProvider theme={DefaultTheme}>
         <TabItem>
-          <TabHeader>
+          <TabHeader adjustsFontSizeToFit>
             <TabHeaderText>{this.props.stopCode}</TabHeaderText>
           </TabHeader>
           {this.renderList()}

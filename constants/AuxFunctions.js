@@ -47,3 +47,22 @@ export async function loadStops() {
     return [];
   }
 }
+
+export async function distance({ lat, lon }, { x, y }) {
+  toRadians = function(number) {
+    return (number * Math.PI) / 180;
+  };
+
+  const R = 6371e3; // metres
+  const φ1 = toRadians(lat);
+  const φ2 = toRadians(x);
+  const Δφ = toRadians(x - lat);
+  const Δλ = toRadians(y - lon);
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}

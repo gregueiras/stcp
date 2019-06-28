@@ -114,10 +114,10 @@ export default StyleSheet.create({
     justifyContent: "space-between"
   },
 
-  tabsContainer : {
+  tabsContainer: {
     paddingLeft: 10,
     paddingRight: 20
-  },
+  }
 });
 
 export const Container = styled(Animated.View)`
@@ -186,7 +186,7 @@ export const TabHeader = styled.View`
 export const TabHeaderText = styled.Text`
   text-align: center;
   font-size: 25px;
-  color: ${props => props.theme.headerText}
+  color: ${props => props.theme.headerText};
 `;
 
 export const DefaultTheme = {
