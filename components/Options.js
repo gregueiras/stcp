@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import { TextInput, View, Alert } from "react-native";
+import { TextInput, View, Alert, AsyncStorage } from "react-native";
 import { LineInfo, Line, Destination, DefaultTheme } from "../constants/Styles";
-import { AsyncStorage } from "react-native";
 import { PROVIDERS, STOPS_KEY, PROVIDERS_DATA } from "../constants/Strings";
 import { ThemeProvider } from "styled-components";
 import {
@@ -11,7 +10,7 @@ import {
 } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import { withNavigation } from "react-navigation";
-import { fetchURL } from "../constants/AuxFunctions";
+import { fetchURL, loadStops } from "../constants/AuxFunctions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Dropdown } from "react-native-material-dropdown";
 
@@ -24,45 +23,6 @@ class Options extends Component {
 
   constructor(props) {
     super(props);
-  }
-
-  async loadStops() {
-    try {
-      let stops = JSON.parse(await AsyncStorage.getItem(STOPS_KEY));
-      if (stops === null) {
-        stops = [
-          {
-            provider: "STCP",
-            stop: "FEUP3",
-            coords: {
-              x: 41.182,
-              y: -8.598
-            }
-          },
-          {
-            provider: "STCP",
-            stop: "FEUP1",
-            coords: {
-              x: 41.178,
-              y: -8.598
-            }
-          },
-          {
-            provider: "STCP",
-            stop: "BVLH1",
-            coords: {
-              x: 41.16842,
-              y: -8.62041
-            }
-          }
-        ];
-      }
-
-      this.setState({ stopsList: stops });
-    } catch (error) {
-      console.log("ERRO");
-      console.log(error);
-    }
   }
 
   async findPlace(query, autocomplete, maxResults) {
@@ -130,15 +90,10 @@ class Options extends Component {
       coords.y = coordinates[1];
     } else if (provider === PROVIDERS.METRO) {
       try {
-        const { lat, lon } = await this.findPlace(
-          "metro " + stop,
-          true,
-          1
-        );
+        const { lat, lon } = await this.findPlace("metro " + stop, true, 1);
 
         coords.x = lat;
         coords.y = lon;
-        
       } catch (error) {
         console.log(error);
       }
@@ -151,17 +106,22 @@ class Options extends Component {
     await AsyncStorage.setItem(STOPS_KEY, JSON.stringify(this.state.stopsList));
   }
 
+  async _loadStops() {
+    const stops = await loadStops();
+    this.setState({ stopsList: stops });
+  }
+
   componentDidMount() {
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("willBlur", () => {
       this.saveStops();
     });
 
-    this.loadStops();
+    this._loadStops();
   }
 
   componentWillUnmount() {
-    console.log("Will Unmount");
+    this.saveStops();
   }
 
   renderList = () => {

@@ -112,18 +112,17 @@ export default StyleSheet.create({
     marginLeft: "10px",
     padding: "10px",
     justifyContent: "space-between"
-  }
+  },
+
+  tabsContainer : {
+    paddingLeft: 10,
+    paddingRight: 20
+  },
 });
 
 export const Container = styled(Animated.View)`
   margin: auto;
 `;
-
-export const TabsContainer = styled.ScrollView.attrs({
-  horizontal: true,
-  contentContainerStyle: { paddingLeft: 10, paddingRight: 20 },
-  showsHorizontalScrollIndicator: false
-})``;
 
 export const TabItem = styled.View`
   width: 300px;
@@ -166,7 +165,7 @@ export const Time = styled.Text`
   color: ${props => props.theme.cardText};
   font-size: ${props => props.theme.fontSize};
   flex-grow: 1;
-  width: 15px;
+  width: 25px;
 `;
 
 export const TabHeader = styled.View`

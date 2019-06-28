@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Text } from "react-native";
+import PropTypes from "prop-types";
 import {
   TabItem,
   LineInfo,
@@ -15,15 +15,14 @@ import { ThemeProvider } from "styled-components";
 
 export default class MenuCard extends Component {
   state = {
-    title: "FEUP",
     list: undefined
   };
 
   async loadMenu() {
     try {
-      const searchUrl =
-        "http://www.move-me.mobi/NextArrivals/GetScheds?providerName=STCP&stopCode=STCP_FEUP2";
-      const response = await global.fetch(searchUrl); // fetch page
+      const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${this.props.provider}&stopCode=${this.props.provider}_${this.props.stopCode}`;
+      console.log(searchUrl);
+      const response = await fetch(searchUrl); // fetch page
       const text = await response.text(); // get response text
       const json = JSON.parse(text); // get response text
 
@@ -42,7 +41,7 @@ export default class MenuCard extends Component {
   }
 
   componentDidMount() {
-    this.loadMenu();
+    if (this.props.stopCode !== "STOP") this.loadMenu();
   }
 
   renderList() {
@@ -72,7 +71,7 @@ export default class MenuCard extends Component {
       <ThemeProvider theme={DefaultTheme}>
         <TabItem>
           <TabHeader>
-            <TabHeaderText>{this.state.title}</TabHeaderText>
+            <TabHeaderText>{this.props.stopCode}</TabHeaderText>
           </TabHeader>
           {this.renderList()}
         </TabItem>
@@ -80,3 +79,13 @@ export default class MenuCard extends Component {
     );
   }
 }
+
+MenuCard.defaultProps = {
+  stopCode: "STOP",
+  provider: "STCP"
+};
+
+MenuCard.propTypes = {
+  stopCode: PropTypes.string,
+  provider: PropTypes.string
+};
