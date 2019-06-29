@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Ementa FEUP",
-    "slug": "ementa-feup",
+    "name": "STCP",
+    "slug": "stcp",
     "privacy": "public",
     "sdkVersion": "33.0.0",
     "platforms": [
@@ -25,6 +25,8 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": "",
+    "githubUrl": "https://github.com/gregueiras/stcp"
   }
 }
