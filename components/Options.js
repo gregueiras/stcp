@@ -166,12 +166,15 @@ class Options extends Component {
       }
       const location = await this.loadLocation({ provider, stop: stopToAdd });
 
-      const newList = list.concat({
+      const newObject = {
         provider,
         stop: stopToAdd,
         coords: location
-      });
+      };
 
+      const newList = list.concat(newObject);
+
+      console.log(newObject);
       this.setState({ stopsList: newList, newStop: "" });
     } catch (error) {
       console.log(error);

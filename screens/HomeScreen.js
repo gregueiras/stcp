@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import MenuCard from "../components/MenuCard";
+import StopCard from "../components/StopCard";
 import Styles, { Container } from "../constants/Styles";
 import { FlatList } from "react-native-gesture-handler";
 import { Text } from "react-native";
@@ -21,6 +21,7 @@ export default class HomeScreen extends Component {
       const { coords } = position;
       const { latitude, longitude } = coords;
 
+      console.log(position)
       this.setState({ location: { lat: latitude, lon: longitude } });
     } catch (error) {
       console.log(error)
@@ -28,7 +29,7 @@ export default class HomeScreen extends Component {
   }
 
   componentDidMount() {
-    navigator.geolocation.getCurrentPosition(this._updateLocation, this._updateLocation);
+    navigator.geolocation.getCurrentPosition(this._updateLocation);
     const { navigation } = this.props;
     this._loadStops();
 
@@ -39,14 +40,23 @@ export default class HomeScreen extends Component {
   }
 
   renderItem({ item }) {
-    return <MenuCard stopCode={item.stop} provider={item.provider} />;
+    return <StopCard stopCode={item.stop} provider={item.provider} />;
+  }
+
+  getSortedList() {
+    const {location} = this.state
+    const sortedList = this.state.stopsList.sort(({ coords: cA }, { coords: cB }) => {
+        return distance(location, cA) - distance(location, cB);
+    });
+    
+    console.log(sortedList.map(({stop, coords}) => [stop, distance(location, coords)]))
+
+    return sortedList
   }
 
   renderList() {
     if (this.state.stopsList !== undefined && this.state.stopsList.length !== 0) {
-      const stops = (this.state.location === undefined) ? this.state.stopsList : this.state.stopsList.sort(({ coords }) => {
-        return distance(this.state.location, coords);
-      });
+      const stops = (this.state.location === undefined) ? this.state.stopsList : this.getSortedList()
 
       return (
         <FlatList

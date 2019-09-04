@@ -48,7 +48,7 @@ export async function loadStops() {
   }
 }
 
-export async function distance({ lat, lon }, { x, y }) {
+export function distance({ lat, lon }, { x, y }) {
   toRadians = function(number) {
     return (number * Math.PI) / 180;
   };

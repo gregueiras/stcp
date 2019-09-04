@@ -15,7 +15,7 @@ import { ThemeProvider } from "styled-components";
 import { RefreshControl, ActivityIndicator } from "react-native";
 import tintColor from "../constants/Colors";
 
-export default class MenuCard extends Component {
+export default class StopCard extends Component {
   state = {
     list: undefined,
     refreshing: false,
@@ -66,9 +66,7 @@ export default class MenuCard extends Component {
   renderList() {
     if (this.state.list !== undefined) {
       if (this.state.loading) {
-        return (
-          <ActivityIndicator size="small" color={tintColor} />
-        );
+        return <ActivityIndicator size="small" color={tintColor} />;
       } else {
         return (
           <FlatList
@@ -111,12 +109,12 @@ export default class MenuCard extends Component {
   }
 }
 
-MenuCard.defaultProps = {
+StopCard.defaultProps = {
   stopCode: "STOP",
   provider: "STCP"
 };
 
-MenuCard.propTypes = {
+StopCard.propTypes = {
   stopCode: PropTypes.string,
   provider: PropTypes.string
 };
