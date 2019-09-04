@@ -21,7 +21,6 @@ export default class HomeScreen extends Component {
       const { coords } = position;
       const { latitude, longitude } = coords;
 
-      console.log(position)
       this.setState({ location: { lat: latitude, lon: longitude } });
     } catch (error) {
       console.log(error)
@@ -49,8 +48,6 @@ export default class HomeScreen extends Component {
         return distance(location, cA) - distance(location, cB);
     });
     
-    console.log(sortedList.map(({stop, coords}) => [stop, distance(location, coords)]))
-
     return sortedList
   }
 

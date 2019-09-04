@@ -103,17 +103,6 @@ export default StyleSheet.create({
       }
     })
   },
-
-  tabItem: {
-    width: "100px",
-    height: "100px",
-    backgroundColor: "rgba(255,255,0,0.2)",
-    borderRadius: 3,
-    marginLeft: "10px",
-    padding: "10px",
-    justifyContent: "space-between"
-  },
-
   tabsContainer: {
     paddingLeft: 10,
     paddingRight: 20
@@ -130,8 +119,9 @@ export const TabItem = styled.View`
   background: ${props => props.theme.cardColor};
   border-radius: 10px;
   border: 0px;
-  margin-left: 10px;
+  margin-right: 20px;
   padding: 10px;
+  margin-bottom: 10px;
   justify-content: space-between;
   shadow-color: #000;
   shadow-offset: 2px 2px;

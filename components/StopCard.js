@@ -64,19 +64,21 @@ export default class StopCard extends Component {
   };
 
   renderList() {
-    if (this.state.list !== undefined) {
-      if (this.state.loading) {
+    const { list, loading, refreshing } = this.state;
+
+    if (list !== undefined) {
+      if (loading) {
         return <ActivityIndicator size="small" color={tintColor} />;
       } else {
         return (
           <FlatList
             refreshControl={
               <RefreshControl
-                refreshing={this.state.refreshing}
+                refreshing={refreshing}
                 onRefresh={this._onRefresh}
               />
             }
-            data={this.state.list}
+            data={list}
             keyExtractor={item => item.id}
             renderItem={this.renderItem}
           />
