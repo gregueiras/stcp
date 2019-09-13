@@ -20,4 +20,7 @@ module.exports = {
     'jsx-a11y/accessible-emoji': 'off',
     'no-console': 'off',
   },
+  globals: {
+    __DEV__: true,
+  }
 }
