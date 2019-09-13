@@ -1,9 +1,9 @@
-export const STOPS_KEY = "@Stops";
+export const STOPS_KEY = '@Stops'
 
 export const PROVIDERS = {
-  STCP: "STCP",
-  METRO: "Metro do Porto",
-};
+  STCP: 'STCP',
+  METRO: 'Metro do Porto',
+}
 
 export const PROVIDERS_DATA = [
   {
@@ -12,4 +12,4 @@ export const PROVIDERS_DATA = [
   {
     value: PROVIDERS.METRO,
   },
-];
+]
