@@ -3,45 +3,14 @@ import { Notifications } from 'expo'
 import PropTypes from 'prop-types'
 import { FlatList, TouchableOpacity } from 'react-native-gesture-handler'
 import { ThemeProvider } from 'styled-components'
-import { RefreshControl, ActivityIndicator } from 'react-native'
+import { RefreshControl, ActivityIndicator, Text } from 'react-native'
 import { TabItem, LineInfo, TabHeader, Line, Destination, Time, DefaultTheme, TabHeaderText } from '../constants/Styles'
+import FadeInView from './FadeInView'
+
 // eslint-disable-next-line import/named
 import { tintColor } from '../constants/Colors'
 
 const BACKEND_API = 'https://stcp-backend.herokuapp.com'
-
-function renderLine({ item: { line, destination, time } }, { stopCode, provider }) {
-  const subscribeAlert = async () => {
-    const token = await Notifications.getExpoPushTokenAsync()
-
-    fetch(BACKEND_API, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token,
-        expire: time,
-        lines: [line],
-        stopCode,
-        provider,
-      }),
-    })
-
-    console.log(line, stopCode, provider)
-  }
-
-  return (
-    <TouchableOpacity onPress={subscribeAlert}>
-      <LineInfo>
-        <Line>{line}</Line>
-        <Destination>{destination}</Destination>
-        <Time>{time}</Time>
-      </LineInfo>
-    </TouchableOpacity>
-  )
-}
 
 export default class StopCard extends Component {
   constructor(props) {
@@ -51,6 +20,7 @@ export default class StopCard extends Component {
       refreshing: false,
       loading: true,
     }
+    this.animationDuration = 750
   }
 
   componentDidMount() {
@@ -96,9 +66,54 @@ export default class StopCard extends Component {
     }
   }
 
+  renderLine(
+    {
+      item: { line, destination, time },
+    },
+    { stopCode, provider },
+  ) {
+    const subscribeAlert = async () => {
+      const token = await Notifications.getExpoPushTokenAsync()
+
+      fetch(BACKEND_API, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          line,
+          stopCode,
+          provider,
+        }),
+      })
+
+      this.setState({ toastShowing: true, toastMessage: `Subscribed to ${line} in ${stopCode}` })
+      setTimeout(() => this.setState({ toastShowing: false, toastMessage: '' }), this.animationDuration)
+      console.log(line, stopCode, provider)
+    }
+
+    return (
+      <>
+        <TouchableOpacity onPress={subscribeAlert}>
+          <LineInfo>
+            <Line>{line}</Line>
+            <Destination>{destination}</Destination>
+            <Time>{time}</Time>
+          </LineInfo>
+        </TouchableOpacity>
+      </>
+    )
+  }
+
   render() {
     const unsubscribeAlert = async () => {
+      const { provider: tempProvider, stopCode: tempStopCode } = this.props
       const token = await Notifications.getExpoPushTokenAsync()
+
+      const provider = tempProvider.replace(/ /g, '+').toUpperCase()
+      const stopCode = tempStopCode.replace(/ /g, '+')
 
       console.log('unsubscribe')
 
@@ -110,11 +125,13 @@ export default class StopCard extends Component {
         },
         body: JSON.stringify({
           token,
+          provider,
+          stopCode,
         }),
       })
     }
 
-    const { list, loading, refreshing } = this.state
+    const { list, loading, refreshing, toastShowing, toastMessage } = this.state
     const { stopCode } = this.props
 
     return (
@@ -131,8 +148,33 @@ export default class StopCard extends Component {
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={this.onRefresh} />}
               data={list}
               keyExtractor={item => item.id}
-              renderItem={item => renderLine(item, this.props)}
+              renderItem={item => this.renderLine(item, this.props)}
             />
+          )}
+          {toastShowing && (
+            <FadeInView
+              style={{
+                marginBottom: -10,
+                marginLeft: -10,
+                marginRight: -10,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+                paddingTop: 10,
+                paddingBottom: 10,
+                backgroundColor: '#333',
+              }}
+              isOpen={toastShowing}
+              duration={this.animationDuration}
+            >
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: '#EEE',
+                }}
+              >
+                {toastMessage}
+              </Text>
+            </FadeInView>
           )}
         </TabItem>
       </ThemeProvider>
@@ -150,6 +192,7 @@ StopCard.propTypes = {
   provider: PropTypes.string,
 }
 
+/*
 renderLine.propTypes = {
   item: PropTypes.arrayOf(
     PropTypes.shape({
@@ -159,3 +202,4 @@ renderLine.propTypes = {
     }),
   ).isRequired,
 }
+*/
