@@ -35,6 +35,57 @@ export default class StopCard extends Component {
     })
   }
 
+  showToast = toastMessage => {
+    this.setState({ toastShowing: true, toastMessage })
+    setTimeout(() => this.setState({ toastShowing: false, toastMessage: '' }), this.animationDuration)
+  }
+
+  unsubscribeAlert = async () => {
+    const { provider: tempProvider, stopCode: tempStopCode } = this.props
+    const token = await Notifications.getExpoPushTokenAsync()
+
+    const provider = tempProvider.replace(/ /g, '+').toUpperCase()
+    const stopCode = tempStopCode.replace(/ /g, '+')
+
+    console.log('unsubscribe')
+
+    fetch(`${BACKEND_API}/unsubscribe`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token,
+        provider,
+        stopCode,
+      }),
+    })
+
+    this.showToast(`Unsubscribed to all lines in ${stopCode}`)
+  }
+
+  subscribeAlert = async ({ stopCode, provider, line }) => {
+    const token = await Notifications.getExpoPushTokenAsync()
+
+    fetch(BACKEND_API, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token,
+        line,
+        stopCode,
+        provider,
+      }),
+    })
+
+    this.showToast(`Subscribed to ${line} in ${stopCode}`)
+    console.log(line, stopCode, provider)
+  }
+
   async loadMenu() {
     try {
       const { provider: tempProvider, stopCode } = this.props
@@ -72,31 +123,9 @@ export default class StopCard extends Component {
     },
     { stopCode, provider },
   ) {
-    const subscribeAlert = async () => {
-      const token = await Notifications.getExpoPushTokenAsync()
-
-      fetch(BACKEND_API, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          line,
-          stopCode,
-          provider,
-        }),
-      })
-
-      this.setState({ toastShowing: true, toastMessage: `Subscribed to ${line} in ${stopCode}` })
-      setTimeout(() => this.setState({ toastShowing: false, toastMessage: '' }), this.animationDuration)
-      console.log(line, stopCode, provider)
-    }
-
     return (
       <>
-        <TouchableOpacity onPress={subscribeAlert}>
+        <TouchableOpacity onPress={() => this.subscribeAlert({ stopCode, provider, line })}>
           <LineInfo>
             <Line>{line}</Line>
             <Destination>{destination}</Destination>
@@ -108,29 +137,6 @@ export default class StopCard extends Component {
   }
 
   render() {
-    const unsubscribeAlert = async () => {
-      const { provider: tempProvider, stopCode: tempStopCode } = this.props
-      const token = await Notifications.getExpoPushTokenAsync()
-
-      const provider = tempProvider.replace(/ /g, '+').toUpperCase()
-      const stopCode = tempStopCode.replace(/ /g, '+')
-
-      console.log('unsubscribe')
-
-      fetch(`${BACKEND_API}/unsubscribe`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          provider,
-          stopCode,
-        }),
-      })
-    }
-
     const { list, loading, refreshing, toastShowing, toastMessage } = this.state
     const { stopCode } = this.props
 
@@ -138,7 +144,7 @@ export default class StopCard extends Component {
       <ThemeProvider theme={DefaultTheme}>
         <TabItem>
           <TabHeader adjustsFontSizeToFit>
-            <TouchableOpacity onPress={unsubscribeAlert}>
+            <TouchableOpacity onPress={this.unsubscribeAlert}>
               <TabHeaderText>{stopCode}</TabHeaderText>
             </TouchableOpacity>
           </TabHeader>
