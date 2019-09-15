@@ -96,12 +96,12 @@ export default class LinksScreen extends Component {
     )
   }
 
-  handleNewStop = text => {
-    this.setState({ newStop: text })
+  handleNewStop = newStop => {
+    this.setState({ newStop })
   }
 
-  handlePicker = value => {
-    this.state.newProvider = value
+  handlePicker = newProvider => {
+    this.setState({ newProvider })
   }
 
   async loadLocation({ provider, stop }) {
