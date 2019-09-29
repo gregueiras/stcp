@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text } from 'react-native'
+import { Text, RefreshControl, ScrollView } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
 import StopCard from '../components/StopCard'
@@ -9,13 +9,13 @@ import { loadStops, distance } from '../constants/AuxFunctions'
 function renderStopCard({ item }) {
   const { stop, provider, favName } = item
 
-  return <StopCard stopCode={favName || stop} provider={provider} />
+  return <StopCard stopCode={stop} displayName={favName || stop} provider={provider} />
 }
 
 export default class HomeScreen extends Component {
   constructor(props) {
     super(props)
-    this.state = { location: undefined, stopsList: undefined }
+    this.state = { location: undefined, stopsList: undefined, refreshing: undefined }
   }
 
   componentDidMount() {
@@ -24,11 +24,19 @@ export default class HomeScreen extends Component {
 
   getSortedList() {
     const { location, stopsList } = this.state
-    const sortedList = stopsList.sort(({ coords: cA }, { coords: cB }) => {
-      return distance(location, cA) - distance(location, cB)
-    })
+    if (location) {
+      const sortedList = stopsList.sort(({ coords: cA }, { coords: cB }) => {
+        return distance(location, cA) - distance(location, cB)
+      })
+      return sortedList
+    }
 
-    return sortedList
+    return undefined
+  }
+
+  onRefresh = async () => {
+    this.updateLocation()
+    setTimeout(this.setState({ refreshing: false }), 60)
   }
 
   setLocation = position => {
@@ -79,7 +87,19 @@ export default class HomeScreen extends Component {
   }
 
   render() {
-    return <Container>{this.renderList()}</Container>
+    const { refreshing } = this.state
+
+    return (
+      <Container>
+        <ScrollView
+          refreshControl={<RefreshControl tintColor="#000" refreshing={refreshing} onRefresh={this.onRefresh} />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, alignSelf: 'center', margin: 'auto' }}
+        >
+          {this.renderList()}
+        </ScrollView>
+      </Container>
+    )
   }
 }
 
