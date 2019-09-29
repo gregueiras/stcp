@@ -17,14 +17,7 @@ export default class HomeScreen extends Component {
   }
 
   componentDidMount() {
-    navigator.geolocation.getCurrentPosition(this.updateLocation)
-    const { navigation } = this.props
-    this.loadStops()
-
-    this.focusListener = navigation.addListener('didFocus', () => {
-      this.loadStops()
-      setTimeout(() => this.loadStops(), 50)
-    })
+    this.updateLocation()
   }
 
   getSortedList() {
@@ -36,7 +29,7 @@ export default class HomeScreen extends Component {
     return sortedList
   }
 
-  updateLocation = position => {
+  setLocation = position => {
     try {
       const { coords } = position
       const { latitude, longitude } = coords
@@ -45,6 +38,17 @@ export default class HomeScreen extends Component {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  updateLocation() {
+    navigator.geolocation.getCurrentPosition(this.setLocation)
+    const { navigation } = this.props
+    this.loadStops()
+
+    this.focusListener = navigation.addListener('didFocus', () => {
+      this.loadStops()
+      setTimeout(() => this.loadStops(), 50)
+    })
   }
 
   async loadStops() {

@@ -10,14 +10,17 @@ import { fetchURL, loadStops } from '../constants/AuxFunctions'
 import { PROVIDERS, STOPS_KEY, PROVIDERS_DATA } from '../constants/Strings'
 import { LineInfo, Line, Destination, DefaultTheme } from '../constants/Styles'
 import SUBWAY_STOPS from '../constants/stops'
+import Modal from '../components/Modal'
 
 export default class LinksScreen extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      stopsList: undefined,
+      stopsList: [],
       newStop: '',
       newProvider: PROVIDERS_DATA[0].value,
+      modalShowing: false,
+      stopToEdit: undefined,
     }
   }
 
@@ -32,6 +35,18 @@ export default class LinksScreen extends Component {
 
   componentWillUnmount() {
     this.saveStops()
+  }
+
+  getFavName(stopCode) {
+    let ret = ''
+    const { stopsList } = this.state
+    stopsList.forEach(({ favName, stop }) => {
+      if (stop === stopCode) {
+        ret = favName
+      }
+    })
+
+    return ret
   }
 
   renderList = () => {
@@ -76,7 +91,6 @@ export default class LinksScreen extends Component {
 
       const newList = list.concat(newObject)
 
-      console.log(newObject)
       this.setState({ stopsList: newList, newStop: '' })
     } catch (error) {
       console.log(error)
@@ -89,6 +103,12 @@ export default class LinksScreen extends Component {
       <LineInfo style={{ paddingLeft: 10, paddingRight: 10 }}>
         <Line>{item.provider}</Line>
         <Destination>{item.stop}</Destination>
+        <TouchableOpacity
+          onPress={() => this.setState({ modalShowing: true, stopToEdit: item.stop })}
+          style={{ marginRight: '4%' }}
+        >
+          <Ionicons name="ios-build" size={36} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => this.removeStop(item.stop)}>
           <Ionicons name="ios-remove-circle-outline" size={40} />
         </TouchableOpacity>
@@ -102,6 +122,41 @@ export default class LinksScreen extends Component {
 
   handlePicker = newProvider => {
     this.setState({ newProvider })
+  }
+
+  editStop = modalStop => {
+    const { stopsList, stopToEdit } = this.state
+
+    const newList = stopsList.map(entry => {
+      const { stop } = entry
+      if (stop === stopToEdit) {
+        return { ...entry, favName: modalStop === '' ? undefined : modalStop }
+      }
+
+      return entry
+    })
+
+    this.setState({ stopsList: newList })
+  }
+
+  removeStop(stopToRemove) {
+    const { stopsList } = this.state
+
+    const newList = stopsList.filter(({ stop }) => {
+      return stop !== stopToRemove
+    })
+
+    this.setState({ stopsList: newList })
+  }
+
+  async loadStops() {
+    const stops = await loadStops()
+    this.setState({ stopsList: stops })
+  }
+
+  async saveStops() {
+    const { stopsList } = this.state
+    await AsyncStorage.setItem(STOPS_KEY, JSON.stringify(stopsList))
   }
 
   async loadLocation({ provider, stop }) {
@@ -130,35 +185,20 @@ export default class LinksScreen extends Component {
     return coords
   }
 
-  async saveStops() {
-    const { stopsList } = this.state
-    await AsyncStorage.setItem(STOPS_KEY, JSON.stringify(stopsList))
-  }
-
-  async loadStops() {
-    const stops = await loadStops()
-    this.setState({ stopsList: stops })
-  }
-
-  removeStop(stopToRemove) {
-    const { stopsList } = this.state
-
-    const list = stopsList
-    const newList = list.filter(({ stop }) => {
-      return stop !== stopToRemove
-    })
-
-    this.setState({ stopsList: newList })
-  }
-
   render() {
-    const { newProvider, newStop } = this.state
+    const { newProvider, newStop, modalShowing, stopToEdit } = this.state
 
     return (
       <ThemeProvider theme={DefaultTheme}>
         <KeyboardAwareScrollView>
           {this.renderList()}
           <View style={{ flexDirection: 'row' }}>
+            <Modal
+              toggleModal={() => this.setState({ modalShowing: !modalShowing })}
+              onSubmit={this.editStop}
+              modalShowing={modalShowing}
+              getOldFavName={() => this.getFavName(stopToEdit)}
+            />
             <Dropdown
               label="Provider"
               data={PROVIDERS_DATA}
