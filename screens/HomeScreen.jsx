@@ -36,7 +36,7 @@ export default class HomeScreen extends Component {
 
   onRefresh = async () => {
     this.updateLocation()
-    setTimeout(this.setState({ refreshing: false }), 60)
+    setTimeout(() => this.setState({ refreshing: false }), 60)
   }
 
   setLocation = position => {
