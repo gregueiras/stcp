@@ -49,7 +49,7 @@ export default function App(props) {
   return (
     <PaperProvider>
       <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+        {Platform.OS === 'ios' && <StatusBar barStyle="dark-content" />}
         <AppNavigator />
       </View>
     </PaperProvider>

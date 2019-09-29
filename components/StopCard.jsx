@@ -28,11 +28,12 @@ export default class StopCard extends Component {
     if (stopCode !== 'STOP') this.loadMenu()
   }
 
-  onRefresh = () => {
+  onRefresh = async () => {
     this.setState({ refreshing: true })
-    this.loadMenu().then(() => {
-      this.setState({ refreshing: false })
-    })
+
+    await this.loadMenu()
+
+    this.setState({ refreshing: false })
   }
 
   showToast = toastMessage => {
@@ -138,14 +139,14 @@ export default class StopCard extends Component {
 
   render() {
     const { list, loading, refreshing, toastShowing, toastMessage } = this.state
-    const { stopCode } = this.props
+    const { displayName } = this.props
 
     return (
       <ThemeProvider theme={DefaultTheme}>
         <TabItem>
           <TabHeader adjustsFontSizeToFit>
             <TouchableOpacity onPress={this.unsubscribeAlert}>
-              <TabHeaderText>{stopCode}</TabHeaderText>
+              <TabHeaderText>{displayName}</TabHeaderText>
             </TouchableOpacity>
           </TabHeader>
           {list && loading && <ActivityIndicator size="small" color={tintColor} />}
@@ -196,6 +197,7 @@ StopCard.defaultProps = {
 StopCard.propTypes = {
   stopCode: PropTypes.string,
   provider: PropTypes.string,
+  displayName: PropTypes.string.isRequired,
 }
 
 /*
