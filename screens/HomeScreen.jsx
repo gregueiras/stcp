@@ -7,7 +7,9 @@ import Styles, { Container } from '../constants/Styles'
 import { loadStops, distance } from '../constants/AuxFunctions'
 
 function renderStopCard({ item }) {
-  return <StopCard stopCode={item.stop} provider={item.provider} />
+  const { stop, provider, favName } = item
+
+  return <StopCard stopCode={favName || stop} provider={provider} />
 }
 
 export default class HomeScreen extends Component {
@@ -100,5 +102,6 @@ renderStopCard.propTypes = {
   item: PropTypes.shape({
     stop: PropTypes.string.isRequired,
     provider: PropTypes.string.isRequired,
+    favName: PropTypes.string,
   }).isRequired,
 }

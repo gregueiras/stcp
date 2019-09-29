@@ -99,17 +99,19 @@ export default class LinksScreen extends Component {
   }
 
   renderItem = ({ item }) => {
+    const { stop, provider, favName } = item
+
     return (
       <LineInfo style={{ paddingLeft: 10, paddingRight: 10 }}>
-        <Line>{item.provider}</Line>
-        <Destination>{item.stop}</Destination>
+        <Line style={{ paddingTop: 7 }}>{provider}</Line>
+        <Destination style={{ paddingTop: 7 }}>{favName ? `${favName} (${stop})` : stop}</Destination>
         <TouchableOpacity
-          onPress={() => this.setState({ modalShowing: true, stopToEdit: item.stop })}
+          onPress={() => this.setState({ modalShowing: true, stopToEdit: stop })}
           style={{ marginRight: '4%' }}
         >
           <Ionicons name="ios-build" size={36} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.removeStop(item.stop)}>
+        <TouchableOpacity onPress={() => this.removeStop(stop)}>
           <Ionicons name="ios-remove-circle-outline" size={40} />
         </TouchableOpacity>
       </LineInfo>
