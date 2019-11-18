@@ -16,6 +16,8 @@ jobs:
       - uses: docker://bycedric/expo-cli:3
         with:
           args: publish
+          expo-packager: yarn
+          expo-version: 3.x
         env:
           EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
           EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
