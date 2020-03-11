@@ -112,9 +112,8 @@ export default class StopCard extends Component {
 
       this.setState({ list: info, loading: false })
     } catch (error) {
-      console.log('ERROR')
-      console.log(error)
       this.setState({ list: 'error' })
+      this.showToast('Network Error')
     }
   }
 
@@ -150,7 +149,7 @@ export default class StopCard extends Component {
             </TouchableOpacity>
           </TabHeader>
           {list && loading && <ActivityIndicator size="small" color={tintColor} />}
-          {list && !loading && (
+          {list !== 'error' && !loading && (
             <FlatList
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={this.onRefresh} />}
               data={list}

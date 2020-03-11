@@ -1,36 +1,62 @@
-/* eslint-disable react/prop-types */
 import React from 'react'
-import { Platform } from 'react-native'
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
-
+import { Platform, Text, View } from 'react-native'
+import { NavigationContainer } from '@react-navigation/native'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { createStackNavigator } from '@react-navigation/stack'
 import TabBarIcon from '../components/TabBarIcon'
 import HomeScreen from '../screens/HomeScreen'
 import LinksScreen from '../screens/LinksScreen'
 
-const HomeStack = createStackNavigator({
-  Home: HomeScreen,
-})
-
-HomeStack.navigationOptions = {
-  tabBarLabel: 'Stops',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? `ios-information-circle${focused ? '' : '-outline'}` : 'md-information-circle'}
-    />
-  ),
+const HomeStackAux = createStackNavigator()
+function HomeStack() {
+  return (
+    <HomeStackAux.Navigator>
+      <HomeStackAux.Screen name="Home" component={HomeScreen} />
+    </HomeStackAux.Navigator>
+  )
 }
 
-const LinksStack = createStackNavigator({
-  Links: LinksScreen,
-})
-
-LinksStack.navigationOptions = {
-  tabBarLabel: 'Manage Stops',
-  tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'} />,
+const LinksStackAux = createStackNavigator()
+function LinksStack() {
+  return (
+    <LinksStackAux.Navigator>
+      <LinksStackAux.Screen name="Links" component={LinksScreen} />
+    </LinksStackAux.Navigator>
+  )
 }
 
-export default createBottomTabNavigator({
-  HomeStack,
-  LinksStack,
-})
+function screenOptions({ route }) {
+  return {
+    // eslint-disable-next-line react/prop-types
+    tabBarIcon: ({ focused }) => {
+      let iconName
+      switch (route.name) {
+        case 'Home':
+          iconName =
+            Platform.OS === 'ios' ? `ios-information-circle${focused ? '' : '-outline'}` : 'md-information-circle'
+          break
+
+        case 'Links':
+          iconName = Platform.OS === 'ios' ? 'ios-link' : 'md-link'
+          break
+
+        default:
+          break
+      }
+
+      return <TabBarIcon name={iconName} focused={focused} />
+    },
+  }
+}
+
+const BottomTab = createBottomTabNavigator()
+export default function() {
+  return (
+    <NavigationContainer>
+      <BottomTab.Navigator screenOptions={screenOptions}>
+        <BottomTab.Screen name="Home" component={HomeStack} />
+        <BottomTab.Screen name="Links" component={LinksStack} />
+      </BottomTab.Navigator>
+    </NavigationContainer>
+  )
+}

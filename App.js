@@ -7,7 +7,9 @@ import { Ionicons } from '@expo/vector-icons'
 import { AppearanceProvider, useColorScheme } from 'react-native-appearance'
 import { Provider as PaperProvider, DefaultTheme, DarkTheme } from 'react-native-paper'
 import PropTypes from 'prop-types'
+import { Provider as ReduxProvider } from 'react-redux'
 import AppNavigator from './src/navigation/AppNavigator'
+import store from './src/redux'
 
 async function loadResourcesAsync() {
   await Promise.all([
@@ -50,7 +52,9 @@ export default function App(props) {
 
   return (
     <AppearanceProvider>
-      <MainApp />
+      <ReduxProvider store={store}>
+        <MainApp />
+      </ReduxProvider>
     </AppearanceProvider>
   )
 }

@@ -1,51 +1,12 @@
-import { AsyncStorage } from 'react-native'
-import { STOPS_KEY } from './Strings'
+import { PROVIDERS } from './Strings'
+import store from '../redux'
+import SUBWAY_STOPS from './stops'
 
 export async function fetchURL(searchUrl) {
   const response = await fetch(searchUrl) // fetch page
   const text = await response.text() // get response text
 
   return text
-}
-
-export async function loadStops() {
-  try {
-    let stops = JSON.parse(await AsyncStorage.getItem(STOPS_KEY))
-    if (stops === null) {
-      stops = [
-        {
-          provider: 'STCP',
-          stop: 'FEUP3',
-          coords: {
-            x: 41.182,
-            y: -8.598,
-          },
-        },
-        {
-          provider: 'STCP',
-          stop: 'FEUP1',
-          coords: {
-            x: 41.178,
-            y: -8.598,
-          },
-        },
-        {
-          provider: 'STCP',
-          stop: 'BVLH1',
-          coords: {
-            x: 41.16842,
-            y: -8.62041,
-          },
-        },
-      ]
-    }
-
-    return stops
-  } catch (error) {
-    console.log('ERROR')
-    console.log(error)
-    return []
-  }
 }
 
 export function distance({ lat, lon }, { x, y }) {
@@ -102,4 +63,57 @@ export async function findPlace(query, autocomplete, maxResults) {
       }
     })
   return placeResults[0]
+}
+
+async function loadLocation({ provider, stop }) {
+  const coords = {
+    x: 0,
+    y: 0,
+  }
+
+  if (provider === PROVIDERS.STCP) {
+    const url = `https://www.stcp.pt/pt/itinerarium/callservice.php?action=srchstoplines&stopcode=${stop}`
+    const res = JSON.parse(await fetchURL(url))[0].geomdesc
+    const { coordinates } = JSON.parse(res)
+
+    ;[coords.y, coords.x] = coordinates
+  } else if (provider === PROVIDERS.METRO) {
+    try {
+      const { lat, lon } = await findPlace(`metro ${stop}`, true, 1)
+
+      coords.x = lat
+      coords.y = lon
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  return coords
+}
+
+export async function validateStop(provider, stopToAdd) {
+  const { stops } = store.getState()
+
+  if (provider === PROVIDERS.METRO) {
+    if (
+      !SUBWAY_STOPS.includes(
+        stopToAdd
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, ''),
+      )
+    )
+      throw new Error(`This stop doesn't exit`)
+  }
+
+  if (stops.filter(({ stop }) => stop === stopToAdd).length !== 0) {
+    throw new Error('Repeated Stop')
+  }
+  const location = await loadLocation({ provider, stop: stopToAdd })
+
+  return {
+    provider,
+    stop: stopToAdd,
+    coords: location,
+  }
 }

@@ -1,9 +1,8 @@
-// Actions
-
 export const Types = {
   ADD: 'stops/ADD',
   REMOVE: 'stops/REMOVE',
   LOAD: 'stops/LOAD',
+  LOAD_SUCCESS: 'stops/LOAD_SUCCESS',
 }
 
 const INITIAL_STATE = []
@@ -16,10 +15,10 @@ export default function stops(state = INITIAL_STATE, action) {
       return [...state, payload.stop]
 
     case Types.REMOVE:
-      return state.filter(stop => JSON.stringify(stop) !== JSON.stringify(payload.stop))
+      return state.filter(({ provider, stop }) => !(provider === payload.stop.provider && stop === payload.stop.stop))
 
-    case Types.LOAD:
-      return payload.stops
+    case Types.LOAD_SUCCESS:
+      return action.payload.stops
 
     default:
       return state
@@ -39,10 +38,12 @@ export const creators = {
       stop,
     },
   }),
-  loadStops: loadedStops => ({
+  loadStops: () => ({
     type: Types.LOAD,
-    payload: {
-      loadedStops,
-    },
+    payload: {},
+  }),
+  loadStopsSuccess: loadedStops => ({
+    type: Types.LOAD_SUCCESS,
+    payload: { stops: loadedStops },
   }),
 }

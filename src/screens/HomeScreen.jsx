@@ -4,7 +4,8 @@ import { FlatList } from 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
 import StopCard from '../components/StopCard'
 import Styles, { Container } from '../constants/Styles'
-import { loadStops, distance } from '../constants/AuxFunctions'
+import { distance } from '../constants/AuxFunctions'
+import { getStops } from '../constants/Storage'
 
 function renderStopCard({ item }) {
   const { stop, provider, favName } = item
@@ -62,7 +63,7 @@ export default class HomeScreen extends Component {
   }
 
   async loadStops() {
-    const stops = await loadStops()
+    const stops = await getStops()
     this.setState({ stopsList: stops })
   }
 
