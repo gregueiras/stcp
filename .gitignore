@@ -9,3 +9,5 @@ npm-debug.*
 web-build/
 web-report/
 .eslintcache
+.expo
+.expo-shared

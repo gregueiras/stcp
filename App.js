@@ -4,9 +4,10 @@ import * as Font from 'expo-font'
 import React, { useState } from 'react'
 import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Provider as PaperProvider } from 'react-native-paper'
+import { AppearanceProvider, useColorScheme } from 'react-native-appearance'
+import { Provider as PaperProvider, DefaultTheme, DarkTheme } from 'react-native-paper'
 import PropTypes from 'prop-types'
-import AppNavigator from './navigation/AppNavigator'
+import AppNavigator from './src/navigation/AppNavigator'
 
 async function loadResourcesAsync() {
   await Promise.all([
@@ -46,13 +47,11 @@ export default function App(props) {
       />
     )
   }
+
   return (
-    <PaperProvider>
-      <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="dark-content" />}
-        <AppNavigator />
-      </View>
-    </PaperProvider>
+    <AppearanceProvider>
+      <MainApp />
+    </AppearanceProvider>
   )
 }
 
@@ -62,4 +61,16 @@ App.propTypes = {
 
 App.defaultProps = {
   skipLoadingScreen: false,
+}
+function MainApp() {
+  const colorScheme = useColorScheme()
+
+  return (
+    <PaperProvider theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <View style={styles.container}>
+        {Platform.OS === 'ios' && <StatusBar barStyle="dark-content" />}
+        <AppNavigator />
+      </View>
+    </PaperProvider>
+  )
 }
