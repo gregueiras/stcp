@@ -34,7 +34,9 @@
     "react-native-paper": "^2.16.0",
     "react-native-web": "^0.11.7",
     "react-navigation": "^3.11.0",
+    "react-redux": "^7.2.0",
     "react-style-proptype": "^3.2.2",
+    "redux": "^4.0.5",
     "styled-components": "^4.3.2"
   },
   "devDependencies": {
