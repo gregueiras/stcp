@@ -1,5 +1,6 @@
 export const Types = {
   ADD: 'stops/ADD',
+  EDIT: 'stops/EDIT',
   REMOVE: 'stops/REMOVE',
   LOAD: 'stops/LOAD',
   LOAD_SUCCESS: 'stops/LOAD_SUCCESS',
@@ -16,6 +17,18 @@ export default function stops(state = INITIAL_STATE, action) {
 
     case Types.REMOVE:
       return state.filter(({ provider, stop }) => !(provider === payload.stop.provider && stop === payload.stop.stop))
+
+    case Types.EDIT:
+      const { stopToEdit, modalStop } = action.payload
+      const newState = state.map(entry => {
+        const { stop } = entry
+        if (stop === stopToEdit) {
+          return { ...entry, favName: modalStop === '' ? undefined : modalStop }
+        }
+
+        return entry
+      })
+      return newState
 
     case Types.LOAD_SUCCESS:
       return action.payload.stops
@@ -36,6 +49,13 @@ export const creators = {
     type: Types.REMOVE,
     payload: {
       stop,
+    },
+  }),
+  editStop: (stopToEdit, modalStop) => ({
+    type: Types.EDIT,
+    payload: {
+      stopToEdit,
+      modalStop,
     },
   }),
   loadStops: () => ({

@@ -17,6 +17,7 @@ function* loadStops() {
 
 function* mySaga() {
   yield takeLatest(Types.ADD, saveStops)
+  yield takeLatest(Types.EDIT, saveStops)
   yield takeLatest(Types.REMOVE, saveStops)
   yield takeLatest(Types.LOAD, loadStops)
 }

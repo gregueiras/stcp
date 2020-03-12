@@ -73,6 +73,11 @@ export default function MyModal({ toggleModal, onSubmit, modalShowing, getOldFav
                 editable
                 maxLength={20}
                 onChangeText={text => setModalStop(text)}
+                onSubmitEditing={() => {
+                  toggleModal()
+                  setModalStop('')
+                  onSubmit(modalStop)
+                }}
                 value={modalStop}
                 placeholder={placeholder}
                 autoFocus

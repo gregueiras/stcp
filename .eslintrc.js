@@ -20,8 +20,9 @@ module.exports = {
   rules: {
     'jsx-a11y/accessible-emoji': 'off',
     'no-console': 'off',
+    'no-case-declarations': 'off',
   },
   globals: {
     __DEV__: true,
-  }
+  },
 }

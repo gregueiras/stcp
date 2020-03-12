@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-use-before-define, react/prop-types */
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Alert } from 'react-native'
 import { ThemeProvider } from 'styled-components'
 import { FlatList, TouchableOpacity } from 'react-native-gesture-handler'
@@ -7,17 +7,15 @@ import { Ionicons } from '@expo/vector-icons'
 import { Dropdown } from 'react-native-material-dropdown'
 import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
-import { useFocusEffect } from '@react-navigation/native'
-import { TextInput } from 'react-native-paper'
+import { TextInput, ActivityIndicator } from 'react-native-paper'
 import { validateStop } from '../constants/AuxFunctions'
-import { getStops } from '../constants/Storage'
 import { PROVIDERS_DATA } from '../constants/Strings'
 import { LineInfo, Line, Destination, DefaultTheme } from '../constants/Styles'
 import Modal from '../components/Modal'
 
 import { creators } from '../redux/ducks/stops'
 
-const { addStop, removeStop, loadStops } = creators
+const { addStop, removeStop, editStop, loadStops } = creators
 
 export default function LinksScreen({ navigation }) {
   const dispatch = useDispatch()
@@ -46,6 +44,7 @@ export default function LinksScreen({ navigation }) {
   }
 
   async function addStopHandler() {
+    if (!newStop) return
     try {
       setLoading(true)
       const stop = await validateStop(newProvider, newStop.toUpperCase())
@@ -82,59 +81,46 @@ export default function LinksScreen({ navigation }) {
     )
   }
 
-  function handleNewStop(stop) {
-    setNewStop(stop)
-  }
-
   function handlePicker(provider) {
     setNewProvider(provider)
-  }
-
-  function editStop(modalStop) {
-    const newList = stopsList.map(entry => {
-      const { stop } = entry
-      if (stop === stopToEdit) {
-        return { ...entry, favName: modalStop === '' ? undefined : modalStop }
-      }
-
-      return entry
-    })
-
-    setStopsList(newList)
   }
 
   return (
     <ThemeProvider theme={DefaultTheme}>
       <View>
-        <View style={{ flexDirection: 'row' }}>
-          <Modal
-            toggleModal={() => setShowModal(!showModal)}
-            onSubmit={editStop}
-            modalShowing={showModal}
-            getOldFavName={() => getFavName(stopToEdit)}
-          />
-          <Dropdown
-            label="Provider"
-            disabled={loading}
-            data={PROVIDERS_DATA}
-            value={newProvider}
-            containerStyle={{ width: '25%' }}
-            onChangeText={handlePicker}
-          />
-          <TextInput
-            style={{ width: '65%', fontSize: 20 }}
-            disabled={loading}
-            maxLength={20}
-            onChangeText={handleNewStop}
-            value={newStop}
-            onSubmitEditing={addStopHandler}
-            placeholder="Insert new stop"
-          />
-          <TouchableOpacity disabled={loading} onPress={addStopHandler}>
-            <Ionicons name="ios-add" size={40} />
-          </TouchableOpacity>
-        </View>
-        <FlatList data={stopsList} keyExtractor={item => item.stop} renderItem={renderItem} />
+        {stopsList.length === 0 && <ActivityIndicator />}
+        {stopsList.length > 0 && (
+          <View>
+            <View style={{ flexDirection: 'row' }}>
+              <Modal
+                toggleModal={() => setShowModal(!showModal)}
+                onSubmit={modalStop => dispatch(editStop(stopToEdit, modalStop))}
+                modalShowing={showModal}
+                getOldFavName={() => getFavName(stopToEdit)}
+              />
+              <Dropdown
+                label="Provider"
+                disabled={loading}
+                data={PROVIDERS_DATA}
+                value={newProvider}
+                containerStyle={{ width: '25%' }}
+                onChangeText={handlePicker}
+              />
+              <TextInput
+                style={{ width: '65%', fontSize: 20 }}
+                disabled={loading}
+                maxLength={20}
+                value={newStop}
+                onSubmitEditing={addStopHandler}
+                placeholder="Insert new stop"
+              />
+              <TouchableOpacity disabled={loading} onPress={addStopHandler}>
+                <Ionicons name="ios-add" size={40} />
+              </TouchableOpacity>
+            </View>
+            <FlatList data={stopsList} keyExtractor={item => item.stop} renderItem={renderItem} />
+          </View>
+        )}
       </View>
     </ThemeProvider>
   )
