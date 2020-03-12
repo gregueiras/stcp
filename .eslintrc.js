@@ -21,6 +21,7 @@ module.exports = {
     'jsx-a11y/accessible-emoji': 'off',
     'no-console': 'off',
     'no-case-declarations': 'off',
+    'no-use-before-define': 'off',
   },
   globals: {
     __DEV__: true,

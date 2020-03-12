@@ -27,11 +27,7 @@ export default function LinksScreen({ navigation }) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    async function fetchData() {
-      dispatch(loadStops())
-    }
-
-    fetchData()
+    dispatch(loadStops())
   }, [])
 
   function getFavName(stopCode) {

@@ -1,11 +1,16 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Text, RefreshControl, ScrollView } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 import { FlatList } from 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
+import * as Location from 'expo-location'
+import * as Permissions from 'expo-permissions'
 import StopCard from '../components/StopCard'
 import Styles, { Container } from '../constants/Styles'
 import { distance } from '../constants/AuxFunctions'
-import { getStops } from '../constants/Storage'
+import { creators } from '../redux/ducks/stops'
+
+const { loadStopsSuccess, loadStops } = creators
 
 function renderStopCard({ item }) {
   const { stop, provider, favName } = item
@@ -13,18 +18,27 @@ function renderStopCard({ item }) {
   return <StopCard stopCode={stop} displayName={favName || stop} provider={provider} />
 }
 
-export default class HomeScreen extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { location: undefined, stopsList: undefined, refreshing: undefined }
-  }
+export default function HomeScreen() {
+  const dispatch = useDispatch()
+  const stopsList = useSelector(state => state.stops)
+  const [location, setLocation] = useState()
+  const [refreshing, setRefreshing] = useState()
+  const [errorMessage, setErrorMessage] = useState('')
 
-  componentDidMount() {
-    this.updateLocation()
-  }
+  useEffect(() => {
+    watchLocation()
+    dispatch(loadStops())
+  }, [])
 
-  getSortedList() {
-    const { location, stopsList } = this.state
+  useEffect(() => {
+    const sorted = getSortedList()
+    if (sorted) {
+      dispatch(loadStopsSuccess(sorted))
+    }
+    setRefreshing(false)
+  }, [location])
+
+  const getSortedList = () => {
     if (location) {
       const sortedList = stopsList.sort(({ coords: cA }, { coords: cB }) => {
         return distance(location, cA) - distance(location, cB)
@@ -32,46 +46,41 @@ export default class HomeScreen extends Component {
       return sortedList
     }
 
-    return undefined
+    return stopsList
   }
 
-  onRefresh = async () => {
-    this.updateLocation()
-    setTimeout(() => this.setState({ refreshing: false }), 60)
+  const updateLocation = position => {
+    const { coords } = position
+    const { latitude, longitude } = coords
+
+    setLocation({ lat: latitude, lon: longitude })
   }
 
-  setLocation = position => {
-    try {
-      const { coords } = position
-      const { latitude, longitude } = coords
-
-      this.setState({ location: { lat: latitude, lon: longitude } })
-    } catch (error) {
-      console.log(error)
+  const watchLocation = async () => {
+    const { status } = await Permissions.askAsync(Permissions.LOCATION)
+    if (status === 'granted') {
+      Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.Balanced, timeInterval: 1000 * 5, distanceInterval: 30 },
+        updateLocation,
+      )
+    } else {
+      setErrorMessage('Permission to access location was denied')
     }
   }
 
-  updateLocation() {
-    navigator.geolocation.getCurrentPosition(this.setLocation)
-    const { navigation } = this.props
-    this.loadStops()
-
-    this.focusListener = navigation.addListener('didFocus', () => {
-      this.loadStops()
-      setTimeout(() => this.loadStops(), 50)
-    })
+  const manualUpdateLocation = async () => {
+    const { status } = await Permissions.askAsync(Permissions.LOCATION)
+    if (status === 'granted') {
+      const position = await Location.getCurrentPositionAsync({})
+      updateLocation(position)
+    } else {
+      setErrorMessage('Permission to access location was denied')
+    }
   }
 
-  async loadStops() {
-    const stops = await getStops()
-    this.setState({ stopsList: stops })
-  }
-
-  renderList() {
-    const { location, stopsList } = this.state
-
-    if (stopsList !== undefined && stopsList.length !== 0) {
-      const stops = location === undefined ? stopsList : this.getSortedList()
+  const renderList = () => {
+    if (stopsList.length !== 0) {
+      const stops = location === undefined ? stopsList : getSortedList()
 
       return (
         <FlatList
@@ -87,36 +96,20 @@ export default class HomeScreen extends Component {
     return <Text style={Styles.getStartedText}>Add some stops! 😊</Text>
   }
 
-  render() {
-    const { refreshing } = this.state
-
-    return (
-      <Container>
+  return (
+    <Container>
+      {errorMessage !== '' && <Text style={Styles.getStartedText}>{errorMessage}</Text>}
+      {errorMessage === '' && (
         <ScrollView
-          refreshControl={<RefreshControl tintColor="#000" refreshing={refreshing} onRefresh={this.onRefresh} />}
+          refreshControl={<RefreshControl tintColor="#000" refreshing={refreshing} onRefresh={manualUpdateLocation} />}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ flexGrow: 1, alignSelf: 'center', margin: 'auto' }}
         >
-          {this.renderList()}
+          {renderList()}
         </ScrollView>
-      </Container>
-    )
-  }
-}
-
-HomeScreen.navigationOptions = {
-  title: 'Stops',
-}
-
-HomeScreen.defaultState = {
-  stopsList: undefined,
-  location: undefined,
-}
-
-HomeScreen.propTypes = {
-  navigation: PropTypes.shape({
-    addListener: PropTypes.func.isRequired,
-  }).isRequired,
+      )}
+    </Container>
+  )
 }
 
 renderStopCard.propTypes = {
